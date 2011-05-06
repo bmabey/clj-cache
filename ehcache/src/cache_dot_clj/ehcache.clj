@@ -1,5 +1,5 @@
 (ns cache-dot-clj.ehcache
-  (:import [net.sf.ehcache CacheManager Cache Element]
+  (:import [net.sf.ehcache CacheManager Cache Element Ehcache]
            net.sf.ehcache.config.CacheConfiguration
            net.sf.ehcache.constructs.blocking.BlockingCache
            net.sf.ehcache.management.ManagementService
@@ -106,8 +106,8 @@
   "Returns an ehcache Cache object with the given name and config."
   [cache-name config]
   (println "I'm making a blocking cache...")
-  (let [^Cache cache (create-cache manager cache-name config)
-        ^Cache blocking-cache (BlockingCache. cache)]
+  (let [^Ehcache cache (create-cache manager cache-name config)
+        ^Ehcache blocking-cache (BlockingCache. cache)]
     (.replaceCacheWithDecoratedCache manager cache blocking-cache)
     blocking-cache))
 
@@ -125,13 +125,13 @@
 (defn lookup
   "Looks up an item in the given cache. Returns a vector:
     [element-exists? value]"
-  [^Cache cache k]
+  [^Ehcache cache k]
   (if-let [^Element element (.get cache ^Serializable (cache-key k))]
     [true (.getValue element)]
     [false nil]))
 
 (defn invalidate
-  [^Cache cache k]
+  [^Ehcache cache k]
   (.remove cache ^Serializable (cache-key k)))
 
 (defn- make-strategy
