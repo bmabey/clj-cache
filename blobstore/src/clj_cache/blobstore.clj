@@ -1,15 +1,29 @@
 (ns clj-cache.blobstore
   (use org.jclouds.blobstore2)
-  (import  [java.io File ObjectOutputStream ObjectInputStream Serializable]
+  (import  [java.io File ObjectOutputStream ObjectInputStream Serializable ByteArrayOutputStream]
            [java.util.zip GZIPOutputStream GZIPInputStream]))
 
-(defn- obj->stream-fn
-  "Takes an object returning a function that will write (using Java serialization) the object to the given OutputStream."
-  [^Serializable obj & [options]]
-  (fn [output-stream]
-    (let [os (if (:gzip options) (GZIPOutputStream. output-stream) output-stream)]
+(defn- write-object [^Serializable obj output-stream & [options]]
+  (let [os (if (:gzip options) (GZIPOutputStream. output-stream) output-stream)]
       (with-open [out (ObjectOutputStream. os)]
-        (.writeObject out obj)))))
+        (.writeObject out obj)))
+  obj)
+
+;; TODO: use this fn instead of obj->input-stream when possible
+;; (Not all BlobStores support streaming uploads yet, so not using this by default)
+(defn obj->stream-fn
+  "Takes an object returning a function that will write (using Java serialization) the object to the given OutputStream."
+  [obj & [options]]
+  (fn [output-stream]
+    (write-object obj output-stream options)))
+
+(defn obj->byte-array
+  "Serializes an object storing it into a byte array that is returned.
+   NOTE: Both the object and the byte array will be kept in memory."
+  [obj & [options]]
+  (let [out (ByteArrayOutputStream.)]
+    (write-object obj out options)
+    (.toByteArray out)))
 
 (defn stream->obj
   "Takes an InputStream and deserializes it into an Object."
@@ -22,12 +36,12 @@
   "Looks up the map by name and assocs the k/v pair only if the key is absent."
   [{:keys [blobstore container path serialization-options]} key value]
   (when-not (blob-exists? blobstore container (path key))
-    (put-blob blobstore container (blob (path key) :payload (obj->stream-fn value serialization-options))))
+    (put-blob blobstore container (blob (path key) :payload (obj->byte-array value serialization-options))))
   value)
 
 (defn lookup
   "Looks up an item in the given cache. Returns a vector:
-[element-exists? value]"
+  [element-exists? value]"
   [{:keys [blobstore container path serialization-options]} key]
   (if (blob-exists? blobstore container (path key))
     [true (-> (get-blob-stream blobstore container (path key))
