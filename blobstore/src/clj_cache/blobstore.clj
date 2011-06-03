@@ -1,17 +1,33 @@
 (ns clj-cache.blobstore
   (use org.jclouds.blobstore2)
   (import  [java.io File ObjectOutputStream ObjectInputStream Serializable]
-           [java.util.zip GZIPOutputStream GZIPInputStream]))
+           [java.util.zip GZIPOutputStream GZIPInputStream]
+            com.gc.iotools.stream.is.InputStreamFromOutputStream))
 
+
+(defn- write-object [^Serializable obj output-stream & [options]]
+  (let [os (if (:gzip options) (GZIPOutputStream. output-stream) output-stream)]
+      (with-open [out (ObjectOutputStream. os)]
+        (.writeObject out obj)))
+  obj)
+
+;; TODO: use this fn instead of obj->input-stream when possible
+;; (Not all BlobStores support streaming uploads yet, so not using this by default)
 (defn- obj->stream-fn
   "Takes an object returning a function that will write (using Java serialization) the object to the given OutputStream."
-  [^Serializable obj & [options]]
+  [obj & [options]]
   (fn [output-stream]
-    (let [os (if (:gzip options) (GZIPOutputStream. output-stream) output-stream)]
-      (with-open [out (ObjectOutputStream. os)]
-        (.writeObject out obj)))))
+    (write-object obj output-stream options)))
 
-(defn stream->obj
+(defn- obj->input-stream
+  "Returns an InputStream of the given object's serialization"
+  [object & [options]]
+  (proxy [InputStreamFromOutputStream] []
+    (produce [output-stream]
+             (write-object object output-stream options))
+    (getCaller [] "clj-cache.blobstore")))
+
+(defn- stream->obj
   "Takes an InputStream and deserializes it into an Object."
   [input-stream & [options]]
   (let [is (if (:gzip options) (GZIPInputStream. input-stream) input-stream)]
@@ -22,7 +38,7 @@
   "Looks up the map by name and assocs the k/v pair only if the key is absent."
   [{:keys [blobstore container path serialization-options]} key value]
   (when-not (blob-exists? blobstore container (path key))
-    (put-blob blobstore container (blob (path key) :payload (obj->stream-fn value serialization-options))))
+    (put-blob blobstore container (blob (path key) :payload (obj->input-stream value serialization-options))))
   value)
 
 (defn lookup
