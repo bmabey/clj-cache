@@ -1,7 +1,7 @@
-(defproject clj-cache-hazelcast "0.0.4-SNAPSHOT"
+(defproject clj-cache-hazelcast "0.0.4"
   :description "Hazelcast support for clj-cache"
   :dependencies [[com.hazelcast/hazelcast "1.9.3"]
-                 [clj-cache "0.0.4-SNAPSHOT"]]
+                 [clj-cache "0.0.4"]]
   :dev-dependencies [[org.clojure/clojure "1.2.0"]
                      [org.clojure/clojure-contrib "1.2.0"]
                      [swank-clojure "1.2.1"]

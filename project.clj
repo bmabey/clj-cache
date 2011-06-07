@@ -1,4 +1,4 @@
-(defproject clj-cache "0.0.4-SNAPSHOT"
+(defproject clj-cache "0.0.4"
   :description "A resettable memoize."
   :dependencies []
   :dev-dependencies [[org.clojure/clojure "1.2.0"]

@@ -3,7 +3,7 @@
   :repositories { "jclouds-snapshot" "https://oss.sonatype.org/content/repositories/snapshots"}
   ;; TODO: remove above repo and lock to 1.0-beta-10c once it is released
   :dependencies [[org.jclouds/jclouds-allblobstore "1.0-SNAPSHOT"]
-                 [clj-cache "0.0.4-SNAPSHOT"]]
+                 [clj-cache "0.0.4"]]
   :dev-dependencies [[org.clojure/clojure "1.2.0"]
                      [org.clojure/clojure-contrib "1.2.0"]
                      [swank-clojure "1.4.0-SNAPSHOT"]]
