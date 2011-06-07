@@ -33,5 +33,9 @@ To use JCloud's BlobStore and clj-cache pull in the following dependency using L
 This package assumes all cache keys can be safely and uniquely `str`ed and values are `java.io.Serializable`. This covers most clojure datastructures but means that different versions of clojure (e.g 1.1 and 1.2) shouldn't share the same distributed cache.
 If you need to control how your key is converted to a string then you can pass in a `:cache-key` function as shown above.
 
+This library currently converts the objects to be cached into a byte array before sending it to the blobstore.  For more information follow [this issue](https://github.com/bmabey/clj-cache/issues/2).
+
+(Note, that the downloads *are* streamed into object deserialization.)
+
 
 As stated above the `put-if-absent-strategy` does not lock/block when being populated so wasted computation may occur.  No locking/blocking strategy is available for this plugin.
