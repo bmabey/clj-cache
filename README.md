@@ -2,6 +2,8 @@
 clj-cache
 =============
 
+**This library is deprecated. Please use the standard library [core.cache](https://github.com/clojure/core.cache) instead.**
+
  A Clojure library that caches the results of impure functions. This library provides 3 internal caching strategies and can also cache externally or persistently using the java [ehcache](http://github.com/alienscience/clj-cache/blob/master/ehcache/README.md) package.
 
 I have found this useful for caching the results of database calls and for holding HTML snippets.
