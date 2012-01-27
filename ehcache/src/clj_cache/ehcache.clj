@@ -7,15 +7,28 @@
            java.lang.management.ManagementFactory
            java.io.Serializable)
   (:require [clj-cache.bean :as bean-utils])
-  (:require [clojure.contrib.string :as str])
-  (:use clojure.contrib.prxml))
+  (:use clj-cache.prxml))
+
+;; taken from clojure.contrib.string.. pasting in for 1.3 compat reasons
+(defn- replace-by
+  "Replaces all matches of re in s with the result of
+  (f (re-groups the-match))."
+  [re f ^String s]
+  (let [m (re-matcher re s)]
+    (let [buffer (StringBuffer. (.length s))]
+      (loop []
+        (if (.find m)
+          (do (.appendReplacement m buffer (f (re-groups m)))
+              (recur))
+          (do (.appendTail m buffer)
+              (.toString buffer)))))))
 
 (defprotocol ToCamelCase
   (to-camel-case [e] "Converts the keys in PRXML to be camel-case"))
 
 (extend-protocol ToCamelCase
   String
-  (to-camel-case [x] (str/replace-by #"-(\w)"
+  (to-camel-case [x] (replace-by #"-(\w)"
                                      #(.toUpperCase (second %))
                                      x))
   clojure.lang.Keyword
@@ -27,6 +40,14 @@
                          []
                          v))
   clojure.lang.PersistentArrayMap
+  (to-camel-case [m]
+                 (reduce (fn [so-far [k v]]
+                           (assoc so-far
+                             (to-camel-case k)
+                             v))
+                         {}
+                         m))
+  clojure.lang.PersistentHashMap
   (to-camel-case [m]
                  (reduce (fn [so-far [k v]]
                            (assoc so-far

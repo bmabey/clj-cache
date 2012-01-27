@@ -35,11 +35,14 @@
 
 (defmulti coerce (fn [bean-class type val] [type (class val)]))
 (defmethod coerce :default [_ type val]
-  (if (= String type)
-    (str val)
-    (try (cast type val)
+  (cond
+   (= String type) (str val)
+   (= Integer/TYPE type) (Integer. val)
+   :else (try (cast type val)
          (catch ClassCastException e
            val))))
+
+(use 'clojure.pprint)
 
 (defn update-bean
   "Update the given bean instance with attrs by calling the appropriate setter methods on it."

@@ -3,12 +3,45 @@
   (:use clojure.test)
   (:use clj-cache.cache)
   (:use [clojure.set :only [union]])
-  (:use [clj-file-utils.core :only [rm-rf mkdir-p exists?]])
   (:require [clj-cache.ehcache :as ehcache]
             [clojure.java.io :as io]
-            [clojure.contrib.jmx :as jmx]))
+            ;;[clojure.contrib.jmx :as jmx]
+            )
+  (:import [java.io File]))
 
 ;;--- Copy and paste of clj-cache.test.cache (different src tree)
+
+(defn mkdir-p
+  "Create a directory and all parent directories if they do not exist."
+  [dir]
+  (.mkdirs (io/file dir)))
+
+(defn delete-file-recursively
+  "Delete file f. If it's a directory, recursively delete all its contents.
+Raise an exception if any deletion fails unless silently is true."
+  [f & [silently]]
+  (let [f (io/file f)]
+    (if (.isDirectory f)
+      (doseq [child (.listFiles f)]
+        (delete-file-recursively child silently)))
+    (io/delete-file f silently)))
+
+(defn rm-rf
+  "Remove a directory, ignoring any errors."
+  [path]
+  (delete-file-recursively path true))
+
+(defmacro defilefun [name docstring args & body]
+  `(do
+     (defmulti ~name ~docstring class)
+     (defmethod ~name File ~args ~@body)
+     (defmethod ~name String ~args (~name (io/file ~@args)))
+     (defmethod ~name :default ~args false)))
+
+(defilefun exists?
+  "Returns true if path exists; false otherwise."
+  [path]
+  (.exists ^File path))
 
 (defn slow [a] (Thread/sleep a) a)
 
@@ -97,7 +130,7 @@
         _ (ehcache/register-with-jmx first-manager)
         f (cached slow (ehcache/strategy first-manager
                                          persistent-cache-config*))]
-    (is (not (empty? (jmx/mbean-names "net.sf.ehcache:*"))))
+    ;;(is (not (empty? (jmx/mbean-names "net.sf.ehcache:*"))))
     (expect "First call" f > 100 "hits function")
     (expect "Second call" f > 101 "hits function")
     (expect "Third call" f > 102 "hits function")
