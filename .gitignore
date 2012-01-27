@@ -1,6 +1,7 @@
 *jar
 lib
 pom.xml
+.lein*
 
 ## EMACS
 *~
