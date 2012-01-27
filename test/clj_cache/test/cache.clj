@@ -64,13 +64,13 @@
   (expect "Second call" f > t1 "hits function")
   (expect "Second call" f > t2 "hits function"))
 
-(deftest invalidate-all-naive 
+(deftest invalidate-all-naive
   (invalidate-all fast-naive 50 51))
-(deftest invalidate-all-lru 
+(deftest invalidate-all-lru
   (invalidate-all fast-lru 50 51))
-(deftest invalidate-all-ttl 
+(deftest invalidate-all-ttl
   (invalidate-all fast-ttl 50 51))
-(deftest invalidate-all-external 
+#_(deftest invalidate-all-external
   (invalidate-all fast-external 50 51))
 
 ;; Highly used cache entries from previous tests live on -
@@ -169,6 +169,3 @@
     (System/gc)
     (Thread/sleep 100)
     (is (nil? (.get weak-inc)))))
-
-
-
