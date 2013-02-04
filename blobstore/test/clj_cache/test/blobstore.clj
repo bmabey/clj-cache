@@ -10,7 +10,10 @@
       (delete-container blobstore (.getName container)))
     (f)))
 
-(def *blobstore* (blobstore "transient" "" ""))
+(def ^{:dynamic true} *blobstore*
+  (blobstore "filesystem" "" "" :jclouds.filesystem.basedir "./tmp/blobstore")
+  ;;(blobstore "transient" "" "")
+  )
 
 ;;(use-fixtures :each (clean-stub-fixture *blobstore*))
 
@@ -62,7 +65,7 @@
 (deftest is-caching-def (is-caching cached-fn 100))
 
 (deftest correct-blob-naming
-  (let [bs (blobstore "transient" "" "")
+  (let [bs (blobstore "filesystem" "" "" :jclouds.filesystem.basedir "./tmp/blobstore")
         cached-fn (cached slow
                           (blobstore/put-if-absent-strategy bs "test-container")
                           {:cache-key #(str "my-num:" (first %))})

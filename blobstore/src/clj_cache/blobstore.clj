@@ -39,7 +39,7 @@
     (put-blob blobstore container (blob (path key) :payload (obj->byte-array value serialization-options))))
   value)
 
-(defn lookup
+#_(defn lookup
   "Looks up an item in the given cache. Returns a vector:
   [element-exists? value]"
   [{:keys [blobstore container path serialization-options]} key]
@@ -47,6 +47,19 @@
     [true (-> (get-blob-stream blobstore container (path key))
               (stream->obj serialization-options))]
     [false nil]))
+
+(defn lookup
+  "Looks up an item in the given cache. Returns a vector:
+  [element-exists? value]"
+  [{:keys [blobstore container path serialization-options] :as m} key]
+  (prn blobstore)
+  (prn {:container container :path-key (path key)})
+  (if (blob-exists? blobstore container (path key))
+    [true (-> (get-blob-stream blobstore container (path key))
+              (stream->obj serialization-options))]
+    [false nil]))
+
+
 
 (defn invalidate
   "Removes an item from the cache."

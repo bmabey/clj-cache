@@ -2,7 +2,8 @@
   :description "Ehcache support for clj-cache"
   :dependences [[net.sf.ehcache/ehcache-core "2.4.7"]
                 [clj-cache "0.0.4"]]
-  :multi-deps {"1.3" [[org.clojure/clojure "1.3.0"]]
+  :multi-deps {"1.4" [[org.clojure/clojure "1.4.0"]]
+               "1.3" [[org.clojure/clojure "1.3.0"]]
                "1.2" [[org.clojure/clojure "1.2.1"]]
                :all  [[net.sf.ehcache/ehcache-core "2.4.7"]
                       [clj-cache "0.0.4"]]}
